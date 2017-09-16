@@ -1,7 +1,7 @@
 #include "iostream"
 #include "StaticFlatMap.hpp"
 
-void main()
+int main()
 {
     StaticFlatMap<int, int, 100> testMap;
     testMap[1] = 2;
@@ -9,7 +9,8 @@ void main()
     testMap[3] = 5;
     for (auto num : testMap)
     {
-        std::cout << num << " ";
+        std::cout << num.first << "," << num.second << std::endl;
     }
     std::cout << std::endl;
+    return 0;
 }

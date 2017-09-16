@@ -1,10 +1,11 @@
-CC=gcc
+CC=g++
+CXXFLAGS=-g -std=c++11 -Wall -pedantic
 CFLAGS=-I.
 DEPS = StaticFlatMap.h
 OBJ = main.o 
 
 %.o: %.cpp $(DEPS)
-		$(CC) -c -o $@ $< $(CFLAGS)
+		$(CC) -Wall -Wextra -Werror -c -o $@ $< $(CFLAGS)
 
-hellomake: $(OBJ)
-		gcc -o $@ $^ $(CFLAGS)
+StaticFlatMap: $(OBJ)
+		g++ -Wall -Wextra -Werror -o $@ $^ $(CFLAGS)
