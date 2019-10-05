@@ -81,6 +81,11 @@ public:
 
 	iterator Find(const KeyType& key) noexcept
 	{
+		return const_cast<iterator>(static_cast<const StaticFlatMap&>(*this).Find(key));
+	}
+
+	const_iterator Find(const KeyType& key) const noexcept
+	{
 		KeyValuePair dummyPair{key, ValueType()};
 		auto it = std::lower_bound(&m_sortedArray[0], &m_sortedArray[m_endIndex],
 				dummyPair, compareFunction);
@@ -119,6 +124,7 @@ public:
 	iterator erase(const KeyType& key)         { return Erase(key);      }
 	iterator insert(const KeyValuePair& val)   { return Insert(val);     }
 	iterator find(const KeyType& key) noexcept { return Find(key);       }
+	const_iterator find(const KeyType& key) const noexcept { return Find(key); }
 
 	void Clear() noexcept { m_endIndex = 0; }
 	void clear() noexcept { Clear(); }

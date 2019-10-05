@@ -44,6 +44,16 @@ TEST_CASE("SFM lookup", "[StaticFlatMap]")
 			REQUIRE(it == m.end());
 		}
 	}
+
+	SECTION("const lookups") {
+		const auto& m2 = m;
+		for (int i = 0; i < kCount; ++i) {
+			auto it = m2.Find(i);
+			REQUIRE(it != m2.end());
+			REQUIRE(it->first  == i);
+			REQUIRE(it->second == i + 1);
+		}
+	}
 }
 
 TEST_CASE("SFM erase", "[StaticFlatMap]")
