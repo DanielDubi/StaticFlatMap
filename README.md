@@ -20,3 +20,26 @@ No so good when:
   
   
 Good luck and have fun
+
+Quick Installation:
+
+System Wide:
+```
+mkdir build
+cd build/
+cmake ..
+make
+make install
+```
+
+Project:
+```
+add_subdirectory(StaticFlatMap)
+target_link_libraries(<target> PUBLIC FlatMap)
+```
+
+OR
+
+```
+cp -R include/FlatMap <your-include-directory>
+```
