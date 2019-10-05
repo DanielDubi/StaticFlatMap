@@ -42,11 +42,6 @@ public:
 
 	constexpr StaticFlatMap() noexcept {}
 
-	StaticFlatMap(const StaticFlatMap& other) noexcept
-    {
-        memcpy(this, &other, sizeof(other));
-    }
-
 	iterator Insert(const KeyValuePair& val)
 	{
 		auto position = std::upper_bound(begin(), end(), val, compareFunction);
@@ -128,7 +123,8 @@ public:
 
 	bool   empty()    const noexcept { return size() == 0; }
 	size_t size()     const noexcept { return m_endIndex; }
-	constexpr size_t max_size() const noexcept { return maxMembers; }
+	constexpr size_t max_size() const noexcept { return capacity(); }
+	constexpr size_t capacity() const noexcept { return maxMembers; }
 
 private:
 

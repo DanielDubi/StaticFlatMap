@@ -110,3 +110,57 @@ TEST_CASE("SFM lookup after erase and insert", "[StaticFlatMap]")
         REQUIRE(it->second == i + 1 + (i & 1));
     }
 }
+
+TEST_CASE("SFM copy", "[StaticFlatMap]")
+{
+    using FlatMap = StaticFlatMap<int, int, 512>;
+    FlatMap m1;
+    FlatMap::iterator it1, it2, it3;
+    constexpr int kCount = 200;
+    for (int i = 0; i < kCount; ++i) {
+        m1.insert(std::make_pair(rand(), rand()));
+    }
+
+    // copy ctor
+    FlatMap m2 = m1;
+    REQUIRE(m1.size() == m2.size());
+    REQUIRE(m1.capacity() == m2.capacity());
+    it1 = m1.begin();
+    it2 = m2.begin();
+    while (it1 != m1.end()) {
+        REQUIRE(it2 != m2.end());
+        REQUIRE(it1->first  == it2->first);
+        REQUIRE(it1->second == it2->second);
+        ++it1;
+        ++it2;
+    }
+    REQUIRE(it1 == m1.end());
+    REQUIRE(it2 == m2.end());
+
+    FlatMap m3;
+    for (int i = 0; i < kCount; ++i) {
+        m3.insert(std::make_pair(rand(), rand()));
+    }
+
+    // copy assignment
+    m3 = m2;
+    REQUIRE(m3.size()     == m2.size());
+    REQUIRE(m3.capacity() == m2.capacity());
+    it1 = m1.begin();
+    it2 = m2.begin();
+    it3 = m3.begin();
+    while (it1 != m1.end()) {
+        REQUIRE(it2 != m2.end());
+        REQUIRE(it3 != m3.end());
+        REQUIRE(it2->first  == it3->first);
+        REQUIRE(it2->second == it3->second);
+        REQUIRE(it2->first  == it1->first);
+        REQUIRE(it2->second == it1->second);
+        ++it1;
+        ++it2;
+        ++it3;
+    }
+    REQUIRE(it1 == m1.end());
+    REQUIRE(it2 == m2.end());
+    REQUIRE(it3 == m3.end());
+}
