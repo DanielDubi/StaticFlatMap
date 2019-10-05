@@ -4,6 +4,7 @@
 #include <array>
 #include <algorithm>
 #include <cstring>
+#include <type_traits>
 
 
 // This class is a statically allocated version of a memory continuous map, mainly useful for small data sets.
@@ -12,6 +13,11 @@
 template <class _KeyType, class _ValueType, size_t maxMembers, class Compare = std::less<_KeyType> >
 class StaticFlatMap
 {
+    static_assert(std::is_trivially_copyable<_KeyType>::value,
+            "StaticFlatMap key type must be IsTriviallyCopyable");
+    static_assert(std::is_trivially_copyable<_ValueType>::value,
+            "StaticFlatMap value type must be IsTriviallyCopyable");
+
 public:
 	using KeyType = _KeyType;
 	using ValueType = _ValueType;
