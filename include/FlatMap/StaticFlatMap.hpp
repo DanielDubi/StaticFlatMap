@@ -1,7 +1,9 @@
 #pragma once
+
 #include <sstream>
 #include <array>
 #include <algorithm>
+#include <cstring>
 
 
 // This class is a statically allocated version of a memory continuous map, mainly useful for small data sets.
