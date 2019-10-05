@@ -17,6 +17,8 @@ class StaticFlatMap
             "StaticFlatMap key type must be IsTriviallyCopyable");
     static_assert(std::is_trivially_copyable<_ValueType>::value,
             "StaticFlatMap value type must be IsTriviallyCopyable");
+    static_assert(std::is_default_constructible<_ValueType>::value,
+            "StaticFlatMap value type must be default constructible");
 
 public:
 	using KeyType = _KeyType;
@@ -38,8 +40,12 @@ public:
 		}
 	}
 
-	StaticFlatMap() { }
-	StaticFlatMap(const StaticFlatMap& other) { memcpy(this, &other, sizeof(other)); }
+	constexpr StaticFlatMap() noexcept {}
+
+	StaticFlatMap(const StaticFlatMap& other) noexcept
+    {
+        memcpy(this, &other, sizeof(other));
+    }
 
 	iterator Insert(const KeyValuePair& val)
 	{
@@ -58,7 +64,7 @@ public:
 		return elem->second;
 	}
 
-	iterator Find(const KeyType& key)
+	iterator Find(const KeyType& key) noexcept
 	{
 		KeyValuePair dummyPair{key, ValueType()};
 		auto range = std::equal_range(begin(), end(), dummyPair, compareFunction);
@@ -97,13 +103,13 @@ public:
 
 	// std::map compatibility
 	template <class... Params>
-	iterator erase(const_iterator position)  { return Erase(position); }
-	iterator erase(const KeyType& key)       { return Erase(key);      }
-	iterator insert(const KeyValuePair& val) { return Insert(val);     }
-	iterator find(const KeyType& key)        { return Find(key);       }
+	iterator erase(const_iterator position)    { return Erase(position); }
+	iterator erase(const KeyType& key)         { return Erase(key);      }
+	iterator insert(const KeyValuePair& val)   { return Insert(val);     }
+	iterator find(const KeyType& key) noexcept { return Find(key);       }
 
-	void Clear() { m_endIndex = 0; }
-	void clear() { Clear(); }
+	void Clear() noexcept { m_endIndex = 0; }
+	void clear() noexcept { Clear(); }
 
 	iterator begin()                 noexcept { return iterator(&m_sortedArray[0]);                  }
 	iterator end()                   noexcept { return iterator(&m_sortedArray[m_endIndex]);         }
@@ -120,9 +126,9 @@ public:
 	const_reverse_iterator rbegin() const noexcept { return const_reverse_iterator(&m_sortedArray[m_endIndex]); }
 	const_reverse_iterator rend()   const noexcept { return const_reverse_iterator(&m_sortedArray[0]);          }
 
-	bool   empty()    const { return size() == 0; }
-	size_t size()     const { return m_endIndex; }
-	size_t max_size() const { return maxMembers; }
+	bool   empty()    const noexcept { return size() == 0; }
+	size_t size()     const noexcept { return m_endIndex; }
+	constexpr size_t max_size() const noexcept { return maxMembers; }
 
 private:
 
@@ -149,7 +155,7 @@ private:
 		throw std::out_of_range(errorMessage.str().c_str());
 	}
 
-	static bool compareFunction(const KeyValuePair& first, const KeyValuePair& second)
+	static bool compareFunction(const KeyValuePair& first, const KeyValuePair& second) noexcept
 	{
 		static Compare less;
 		return less(first.first, second.first);
