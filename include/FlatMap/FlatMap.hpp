@@ -48,10 +48,17 @@ public:
     // bool operator==(const FlatMap& other) noexcept;
     // bool operator!=(const FlatMap& other) noexcept;
 
-    // iterator begin() noexcept;
+    iterator begin() noexcept
+    {
+        return iterator{&_keys[0], &_vals[0]};
+    }
+
     // const_iterator begin() const noexcept;
     // const_iterator cbegin() const noexcept;
-    // iterator end() noexcept;
+    iterator end() noexcept
+    {
+        return iterator{&_keys[_size], &_vals[_size]};
+    }
     // const_iterator end() const noexcept;
     // const_iterator cend() const noexcept;
 
@@ -65,7 +72,7 @@ public:
         return _size;
     }
 
-    size_type max_size() const noexcept
+    constexpr size_type max_size() const noexcept
     {
         return std::numeric_limits<decltype(size)>::max();
     }
@@ -231,5 +238,5 @@ struct FlatMap<Key, T, Compare>::Iterator {
 
 private:
     const key_type* _key;
-    mapped_type     _val;
+    mapped_type*    _val;
 };
