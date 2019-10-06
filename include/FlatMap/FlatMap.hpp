@@ -20,16 +20,6 @@ class FlatMap
     static_assert(std::is_trivially_copyable<_T>::value,
             "FlatMap mapped type must be Trivially Copyable");
 
-    // TODO: I believe these are all redundant:
-    // static_assert(std::is_nothrow_assignable<_Key>::value,
-    //         "FlatMap key type must be No Throw Assignable");
-    // static_assert(std::is_nothrow_assignable<_T>::value,
-    //         "FlatMap mapped type must be No Throw Assignable");
-    // static_assert(std::is_nothrow_constructible<_Key>::value,
-    //         "FlatMap key type must be No Throw Constructible");
-    // static_assert(std::is_nothrow_constructible<_T>::value,
-    //         "FlatMap mapped type must be No Throw Constructible");
-
     struct Iterator;
     // struct ConstIterator;
 
@@ -47,96 +37,111 @@ public:
     using pointer = value_type*;
     using const_pointer = const value_type*;
 
-#if 0
-    FlatMap(key_compare& comp = key_compare()) noexcept;
-    FlatMap(std::initializer_list<value_type> values) noexcept;
-    FlatMap(const FlatMap& other) noexcept;
-    FlatMap(FlatMap&& other) noexcept;
-    FlatMap& operator=(const FlatMap& other) noexcept;
-    FlatMap& operator=(FlatMap&& other) noexcept;
-    bool operator==(const FlatMap& other) noexcept;
-    bool operator!=(const FlatMap& other) noexcept;
+    FlatMap(const key_compare& comp = key_compare()) noexcept
+        : _Compare{comp} {}
 
-    iterator begin() noexcept;
-    const_iterator begin() const noexcept;
-    const_iterator cbegin() const noexcept;
-    iterator end() noexcept;
-    const_iterator end() const noexcept;
-    const_iterator cend() const noexcept;
+    // FlatMap(std::initializer_list<value_type> values) noexcept;
+    // FlatMap(const FlatMap& other) noexcept;
+    // FlatMap(FlatMap&& other) noexcept;
+    // FlatMap& operator=(const FlatMap& other) noexcept;
+    // FlatMap& operator=(FlatMap&& other) noexcept;
+    // bool operator==(const FlatMap& other) noexcept;
+    // bool operator!=(const FlatMap& other) noexcept;
 
-    bool empty() const noexcept;
-    size_type size() const noexcept;
-    size_type max_size() const noexcept;
+    // iterator begin() noexcept;
+    // const_iterator begin() const noexcept;
+    // const_iterator cbegin() const noexcept;
+    // iterator end() noexcept;
+    // const_iterator end() const noexcept;
+    // const_iterator cend() const noexcept;
 
-    void clear() noexcept;
+    constexpr bool empty() const noexcept
+    {
+        return _size == 0u;
+    }
 
-    std::pair<iterator, bool> insert(const value_type&& x) noexcept;
+    constexpr size_type size() const noexcept
+    {
+        return _size;
+    }
 
-    template <class P,
-        typename = typename std::is_constructible<value_type, P&&>::value>>
-    std::pair<iterator, bool> insert(P&& value) noexcept;
+    size_type max_size() const noexcept
+    {
+        return std::numeric_limits<decltype(size)>::max();
+    }
 
-    template <class InputIt>
-    void insert(InputIt first, InputIt last) noexcept;
+    // void clear() noexcept;
 
-    template <class... Args>
-    std::pair<iterator, bool> emplace(Args&&... args) noexcept;
+    // std::pair<iterator, bool> insert(const value_type&& x) noexcept;
 
-    iterator find(const key_type& key) noexcept;
-    const_iterator find(const key_type& key) const noexcept;
+    // template <class P,
+    //     typename = typename std::is_constructible<value_type, P&&>::value>>
+    // std::pair<iterator, bool> insert(P&& value) noexcept;
 
-    template <class K,
-             class C = _Compare, typename = typename C::is_transparent>
-    iterator find(const K& key) noexcept;
+    // template <class InputIt>
+    // void insert(InputIt first, InputIt last) noexcept;
 
-    template <class K,
-             class C = _Compare, typename = typename C::is_transparent>
-    const_iterator find(const K& key) const noexcept;
+    // template <class... Args>
+    // std::pair<iterator, bool> emplace(Args&&... args) noexcept;
 
-    iterator erase(const_iterator pos) noexcept;
-    iterator erase(iterator pos) noexcept;
-    iterator erase(const_iterator first, const_iterator last) noexcept;
-    size_type erase(const key_type& key) noexcept;
+    // iterator find(const key_type& key) noexcept;
+    // const_iterator find(const key_type& key) const noexcept;
 
-    size_type count(const key_type& key) const noexcept;
-    bool contains(const key_type& key) const noexcept;
+    // template <class K,
+    //          class C = _Compare, typename = typename C::is_transparent>
+    // iterator find(const K& key) noexcept;
 
-    iterator lower_bound(const key_type& key) noexcept;
-    const_iterator lower_bound(const key_type& key) const noexcept;
-    template <class K,
-             class C = _Compare, typename = typename C::is_transparent>
-    iterator lower_bound(const K& k) noexcept;
-    template <class K,
-             class C = _Compare, typename = typename C::is_transparent>
-    const_iterator lower_bound(const K& k) const noexcept;
+    // template <class K,
+    //          class C = _Compare, typename = typename C::is_transparent>
+    // const_iterator find(const K& key) const noexcept;
 
-    std::pair<iterator, iterator> equal_range(const key_type& key) noexcept;
-    std::pair<const_iterator, const_iterator> equal_range(const key_type& key) const noexcept;
-    template <class K,
-             class C = _Compare, typename = typename C::is_transparent>
-    std::pair<iterator, iterator> equal_range(const K& key) noexcept;
-    template <class K,
-             class C = _Compare, typename = typename C::is_transparent>
-    std::pair<const_iterator, const_iterator> equal_range(const key_type& key) const noexcept;
+    // iterator erase(const_iterator pos) noexcept;
+    // iterator erase(iterator pos) noexcept;
+    // iterator erase(const_iterator first, const_iterator last) noexcept;
+    // size_type erase(const key_type& key) noexcept;
 
-    iterator upper_bound(const key_type& key) noexcept;
-    const_iterator upper_bound(const key_type& key) const noexcept;
-    template <class K,
-             class C = _Compare, typename = typename C::is_transparent>
-    iterator upper_bound(const K& k) noexcept;
-    template <class K,
-             class C = _Compare, typename = typename C::is_transparent>
-    const_iterator upper_bound(const K& k) const noexcept;
+    // size_type count(const key_type& key) const noexcept;
+    // bool contains(const key_type& key) const noexcept;
 
-    void swap(FlatMap& other) noexcept;
+    // iterator lower_bound(const key_type& key) noexcept;
+    // const_iterator lower_bound(const key_type& key) const noexcept;
+    // template <class K,
+    //          class C = _Compare, typename = typename C::is_transparent>
+    // iterator lower_bound(const K& k) noexcept;
+    // template <class K,
+    //          class C = _Compare, typename = typename C::is_transparent>
+    // const_iterator lower_bound(const K& k) const noexcept;
 
-#endif
+    // std::pair<iterator, iterator> equal_range(const key_type& key) noexcept;
+    // std::pair<const_iterator, const_iterator> equal_range(const key_type& key) const noexcept;
+    // template <class K,
+    //          class C = _Compare, typename = typename C::is_transparent>
+    // std::pair<iterator, iterator> equal_range(const K& key) noexcept;
+    // template <class K,
+    //          class C = _Compare, typename = typename C::is_transparent>
+    // std::pair<const_iterator, const_iterator> equal_range(const key_type& key) const noexcept;
+
+    // iterator upper_bound(const key_type& key) noexcept;
+    // const_iterator upper_bound(const key_type& key) const noexcept;
+    // template <class K,
+    //          class C = _Compare, typename = typename C::is_transparent>
+    // iterator upper_bound(const K& k) noexcept;
+    // template <class K,
+    //          class C = _Compare, typename = typename C::is_transparent>
+    // const_iterator upper_bound(const K& k) const noexcept;
+
+    // void swap(FlatMap& other) noexcept;
 private:
-    key_type*    _keys;
-    mapped_type* _vals;
-    // REVISIT: use 2 x u32 or 2 x u64?
-    size_type    _size;
-    size_type    _capacity;
+    // const key_type* _keys = nullptr;
+    // const key_type* _keyend = nullptr;
+    // mapped_type*    _vals = nullptr;
+    // size_type       _capacity = 0;
+
+    // TODO: use u32 for size and capacity?
+    const key_type* _keys = nullptr;
+    mapped_type*    _vals = nullptr;
+    size_type       _size = 0;
+    size_type       _capacity = 0;
 };
 
 template <typename Key, typename T, typename Compare>
@@ -225,6 +230,6 @@ struct FlatMap<Key, T, Compare>::Iterator {
     }
 
 private:
-    const key_type* _key = nullptr;
-    mapped_type*    _val = nullptr;
+    const key_type* _key;
+    mapped_type     _val;
 };
