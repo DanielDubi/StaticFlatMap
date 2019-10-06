@@ -110,7 +110,11 @@ public:
     // size_type count(const key_type& key) const noexcept;
     // bool contains(const key_type& key) const noexcept;
 
-    // iterator lower_bound(const key_type& key) noexcept;
+    iterator lower_bound(const key_type& key) noexcept
+    {
+        // TODO: dispatch off size
+        return _lower_bound_linear(key);
+    }
     // const_iterator lower_bound(const key_type& key) const noexcept;
     // template <class K,
     //          class C = _Compare, typename = typename C::is_transparent>
@@ -137,8 +141,31 @@ public:
     //          class C = _Compare, typename = typename C::is_transparent>
     // const_iterator upper_bound(const K& k) const noexcept;
 
-    // void swap(FlatMap& other) noexcept;
+    void swap(FlatMap& other) noexcept(std::is_nothrow_swappable<_Compare>::value)
+    {
+        std::swap(_keys,     other._keys);
+        std::swap(_vals,     other._vals);
+        std::swap(_size,     other._size);
+        std::swap(_capacity, other._capacity);
+        std::swap(static_cast<_Compare&>(*this), static_cast<_Compare&>(other));
+    }
+
+    constexpr key_compare key_comp() const noexcept { return *this; }
+
 private:
+    iterator _lower_bound_linear(const key_type& key) noexcept
+    {
+        auto comp = key_compare();
+        const key_type* b = &_keys[0];
+        const key_type* e = &_keys[_size];
+        const key_type* k;
+        for (k = b; k != e; ++k) {
+            if (!comp(key, *k))
+                break;
+        }
+        return iterator{k, &_vals[k - b]};
+    }
+
     // const key_type* _keys = nullptr;
     // const key_type* _keyend = nullptr;
     // mapped_type*    _vals = nullptr;
@@ -240,3 +267,13 @@ private:
     const key_type* _key;
     mapped_type*    _val;
 };
+
+namespace std {
+
+template <class Key, class T, class Compare>
+void swap(FlatMap<Key, T, Compare>& x, FlatMap<Key, T, Compare>& y) noexcept
+{
+    x.swap(y);
+}
+
+} // ~std
