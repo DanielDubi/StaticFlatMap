@@ -21,20 +21,22 @@ class FlatMap
             "FlatMap mapped type must be Trivially Copyable");
 
     struct Iterator;
+    struct PairPtr;
     // struct ConstIterator;
 
 public:
     using key_compare = _Compare;
     using key_type = _Key;
     using mapped_type = _T;
-    using value_type = std::pair<const key_type, mapped_type>;
+    using value_type = std::pair<const key_type&, mapped_type&>;
     using size_type = std::size_t;
     using iterator = Iterator;
     // using const_iterator = ConstIterator;
     using difference_type = std::ptrdiff_t;
     using reference = value_type&;
     using const_reference = const value_type&;
-    using pointer = value_type*;
+    using pointer = 
+    // using pointer = value_type*;
     using const_pointer = const value_type*;
 
     FlatMap(const key_compare& comp = key_compare()) noexcept
@@ -79,7 +81,19 @@ public:
 
     // void clear() noexcept;
 
-    // std::pair<iterator, bool> insert(const value_type&& x) noexcept;
+    std::pair<iterator, bool> insert(const value_type& x) noexcept
+    {
+        auto it = lower_bound(x.first);
+        if (it == end() || !key_comp()(x.first, it->first))
+            return std::make_pair(it, false);
+        // TODO: grow
+        difference_type pos = it - begin();
+        difference_type cnt = _size - pos + 1;
+        memmove(&_keys[pos+1], &_keys[pos], sizeof(*_keys)*cnt);
+        memmove(&_vals[pos+1], &_vals[pos], sizeof(*_vals)*cnt);
+        ++_size;
+        return std::make_pair(iterator{&_keys[pos], &_vals[pos]}, true);
+    }
 
     // template <class P,
     //     typename = typename std::is_constructible<value_type, P&&>::value>>
@@ -163,7 +177,13 @@ private:
             if (!comp(key, *k))
                 break;
         }
-        return iterator{k, &_vals[k - b]};
+        return _make_iterator(k);
+    }
+
+    iterator _make_iterator(const key_type* k) noexcept
+    {
+        auto pos = k - &_keys[0];
+        return iterator{k, &_vals[pos]};
     }
 
     // const key_type* _keys = nullptr;
@@ -172,10 +192,21 @@ private:
     // size_type       _capacity = 0;
 
     // TODO: use u32 for size and capacity?
-    const key_type* _keys = nullptr;
-    mapped_type*    _vals = nullptr;
-    size_type       _size = 0;
-    size_type       _capacity = 0;
+    key_type*    _keys = nullptr;
+    mapped_type* _vals = nullptr;
+    size_type    _size = 0;
+    size_type    _capacity = 0;
+};
+
+template <typename Key, typename T, typename Compare>
+struct FlatMap<Key, T, Compare>::PairPtr : std::pair<const Key&, T&> {
+    constexpr PairPtr(const Key& k, T& v) noexcept
+        : std::pair<const Key&, T&>{k, v} {}
+
+    const std::pair<const Key&, T&>* operator->() const noexcept
+    {
+        return this;
+    }
 };
 
 template <typename Key, typename T, typename Compare>
@@ -185,12 +216,12 @@ struct FlatMap<Key, T, Compare>::Iterator {
         : _key{key}, _val{val}
     {}
 
-    reference operator*() noexcept
+    std::pair<const key_type&, mapped_type&> operator*() noexcept
     {
-        return { *_key, *_val };
+        return std::make_pair(*_key, *_val);
     }
 
-    pointer operator->() noexcept
+    std:: operator->() noexcept
     {
         return &operator*();
     }
@@ -231,6 +262,11 @@ struct FlatMap<Key, T, Compare>::Iterator {
     {
         *this += n;
         return *this;
+    }
+
+    difference_type operator-(iterator other) noexcept
+    {
+        return _key - other._key;
     }
 
     friend bool operator==(Iterator a, Iterator b) noexcept
