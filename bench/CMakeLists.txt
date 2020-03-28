@@ -1,0 +1,5 @@
+add_executable(bench bench.cpp)
+target_link_libraries(bench WarningFlags)
+target_link_libraries(bench FlatMap)
+target_link_libraries(bench benchmark)
+set_target_properties(bench PROPERTIES CXX_STANDARD 17)
